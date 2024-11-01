@@ -106,28 +106,22 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (qrCodeData) {
                         let resultText = `QR Code Data: <b>${qrCodeData}</b>`;
                         document.getElementById("result").innerHTML = resultText;
-
-                        // Create a new list item
-                        const listItem = document.createElement("li");
                         
-                        // Create an anchor element
-                        const link = document.createElement("a");
-                        link.href = qrCodeData; // Set the link URL
-                        link.target = "_blank"; // Open in a new tab
-                        link.textContent = qrCodeData; // Display the QR code data
-                        
-                        // // Append the anchor to the list item
-                        // listItem.appendChild(link);
-                        // // Append the list item to the ordered list
-                        // document.getElementById("linkList").appendChild(listItem);
-
+                        // Checking for protocol and adding http:// if it's missing
+                        let finalUrl = qrCodeData; // Creating a new variable for the final URL
+                        if (!/^https?:\/\//i.test(finalUrl)) {
+                            finalUrl = 'http://' + finalUrl; // Adding http:// if the protocol is absent
+                        }
                         // Save the new link to storage
                         chrome.storage.local.get('savedLinks', (data) => {
                             const links = data.savedLinks || [];
-                            links.push(qrCodeData);
+                            links.push(finalUrl);
                             saveLinks(links); // Save updated links
                             loadLinks(); // Reload the links
                         });
+                    } else {
+                        const resultText = "QR Code not found!";
+                        document.getElementById("result").innerHTML = resultText;
                     }
                 }
             });
