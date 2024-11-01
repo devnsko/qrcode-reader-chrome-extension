@@ -1,3 +1,11 @@
+async function captureScreen() {
+    return new Promise((resolve) => {
+        chrome.runtime.sendMessage({ action: "captureScreen" }, (response) => {
+            resolve(response.dataUrl);
+        });
+    });
+}
+
 async function decodeQRCode(imageDataUrl) {
     try {
         const formData = new FormData();
@@ -32,8 +40,9 @@ async function decodeQRCode(imageDataUrl) {
         console.error("Error decoding QR code:", error);
         return null; // Returning null in case of an error
     } finally {
-        // Hide loading spinner
+        // Hide loading spinner after processing
         document.getElementById("loading").style.display = "none"; // Hide loading spinner
+        document.getElementById("scan").disabled = false; // Re-enable the scan button
     }
 }
 
@@ -56,7 +65,7 @@ function loadLinks() {
             // Create the delete icon
             const deleteIcon = document.createElement("button");
             deleteIcon.className = "delete-icon"; // Apply the delete icon styling
-            deleteIcon.textContent = "❌"; // Unicode character for a cross
+            deleteIcon.textContent = "🗑️"; // Unicode character for a cross
             deleteIcon.onclick = (event) => {
                 event.stopPropagation(); // Prevent the link button click event
                 // Remove the link from storage and reload links

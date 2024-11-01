@@ -20,7 +20,7 @@
         button {
             margin-top: 10px;
             padding: 10px;
-            width: 100%;
+            width: 100%; /* Full width for all buttons */
             cursor: pointer;
             border: none;
             border-radius: 5px;
@@ -41,19 +41,37 @@
             background-color: #28a745;
             color: white;
             margin-top: 10px; /* Space between buttons */
-            width: auto; /* Allow width to fit content */
+            width: 100%; /* Set width to full */
             text-align: left; /* Align text to the left */
+            padding: 10px; /* Add padding for better spacing */
+            position: relative; /* Allow positioning of the delete icon */
         }
-        .link-button:hover {
-            background-color: #218838;
+
+        .delete-icon-container {
+            display: none; /* Hidden by default */
+            position: absolute; /* Positioning the icon container */
+            right: 10px; /* Align to the right */
+            top: 50%; /* Center vertically */
+            transform: translateY(-50%); /* Adjust for vertical centering */
+            background-color: rgba(211, 211, 211, 0.7); /* Light gray with transparency */
+            border-radius: 5px; /* Rounded corners */
+            padding: 5px; /* Add padding for better spacing */
+            transition: opacity 0.3s; /* Smooth appearance */
+            opacity: 0; /* Start with opacity 0 */
         }
+
+        .link-button:hover .delete-icon-container {
+            display: block; /* Show the delete icon on button hover */
+            opacity: 1; /* Fade in effect */
+        }
+
         .delete-icon {
-            background-color: transparent;
-            color: white;
+            color: #fff; /* White color for the icon */
             border: none; /* No border */
             font-size: 14px; /* Smaller font size for delete */
             cursor: pointer; /* Pointer cursor */
-            margin-left: 10px; /* Space between text and icon */
+            padding: 0; /* Remove extra padding */
+            margin: 0; /* Remove margin to keep it compact */
         }
         #result {
             margin-top: 15px;
