@@ -53,32 +53,36 @@ function loadLinks() {
         const links = data.savedLinks || [];
 
         links.forEach((linkData, index) => {
-            // Create the link button
-            const linkButton = document.createElement("button");
-            linkButton.className = "link-button"; // Apply the button styling
-            linkButton.textContent = linkData; // Display the QR code data
-            linkButton.onclick = () => {
-                // Open the link in a new tab when the button is clicked
-                window.open(linkData, '_blank');
-            };
-
-            // Create the delete icon
-            const deleteIcon = document.createElement("button");
-            deleteIcon.className = "delete-icon"; // Apply the delete icon styling
-            deleteIcon.textContent = "🗑️"; // Unicode character for a cross
-            deleteIcon.onclick = (event) => {
-                event.stopPropagation(); // Prevent the link button click event
-                // Remove the link from storage and reload links
-                links.splice(index, 1); // Remove link from array
-                saveLinks(links); // Save updated links
-                loadLinks(); // Reload the links
-            };
-
-            // Append the delete icon to the link button
-            linkButton.appendChild(deleteIcon);
-            linkList.appendChild(linkButton); // Append the link button to the link list
+            addLink(linkData, index, links)
         });
     });
+}
+
+function addLink(linkData, index, links) {
+    // Create the link button
+    const linkButton = document.createElement("button");
+    linkButton.className = "link-button"; // Apply the button styling
+    linkButton.textContent = linkData; // Display the QR code data
+    linkButton.onclick = () => {
+        // Open the link in a new tab when the button is clicked
+        window.open(linkData, '_blank');
+    };
+
+    // Create the delete icon
+    const deleteIcon = document.createElement("button");
+    deleteIcon.className = "delete-icon"; // Apply the delete icon styling
+    deleteIcon.textContent = "🗑️"; // Unicode character for a cross
+    deleteIcon.onclick = (event) => {
+        event.stopPropagation(); // Prevent the link button click event
+        // Remove the link from storage and reload links
+        links.splice(index, 1); // Remove link from array
+        saveLinks(links); // Save updated links
+        loadLinks(); // Reload the links
+    };
+
+    // Append the delete icon to the link button
+    linkButton.appendChild(deleteIcon);
+    linkList.appendChild(linkButton); // Append the link button to the link list
 }
 
 function saveLinks(links) {
@@ -112,16 +116,17 @@ document.addEventListener('DOMContentLoaded', () => {
                         link.target = "_blank"; // Open in a new tab
                         link.textContent = qrCodeData; // Display the QR code data
                         
-                        // Append the anchor to the list item
-                        listItem.appendChild(link);
-                        // Append the list item to the ordered list
-                        document.getElementById("linkList").appendChild(listItem);
+                        // // Append the anchor to the list item
+                        // listItem.appendChild(link);
+                        // // Append the list item to the ordered list
+                        // document.getElementById("linkList").appendChild(listItem);
 
                         // Save the new link to storage
                         chrome.storage.local.get('savedLinks', (data) => {
                             const links = data.savedLinks || [];
                             links.push(qrCodeData);
                             saveLinks(links); // Save updated links
+                            loadLinks(); // Reload the links
                         });
                     }
                 }
