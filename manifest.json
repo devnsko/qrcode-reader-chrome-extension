@@ -2,16 +2,15 @@
     "manifest_version": 3,
     "name": "QR Code Scanner",
     "version": "1.0",
-    "description": "Считывание QR-кодов прямо с экрана браузера",
+    "description": "Scanning QR codes directly from the browser screen",
     "permissions": ["activeTab", "scripting"],
     "action": {
-      "default_popup": "popup.html"
+        "default_popup": "popup.html"
     },
     "background": {
-      "service_worker": "background.js"
+        "service_worker": "background.js"
     },
     "host_permissions": [
-      "<all_urls>" 
+        "<all_urls>"
     ]
-  }
-  
+}

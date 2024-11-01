@@ -1,42 +1,67 @@
+async function decodeQRCode(imageDataUrl) {
+    try {
+        // Creating FormData to send the image
+        const formData = new FormData();
+        const response = await fetch(imageDataUrl);
+
+        if (!response.ok) {
+            throw new Error(`Error fetching image: ${response.status}`);
+        }
+
+        const blob = await response.blob();
+        formData.append('file', blob);
+
+        const apiResponse = await fetch('https://api.qrserver.com/v1/read-qr-code/', {
+            method: 'POST',
+            body: formData
+        });
+
+        // Checking the response status
+        if (!apiResponse.ok) {
+            throw new Error(`HTTP error! status: ${apiResponse.status}`);
+        }
+
+        const data = await apiResponse.json();
+
+        console.log("API response:", data); // Logging API response for debugging
+
+        return data[0]?.symbol[0]?.data; // Extracting QR code data from API response
+    } catch (error) {
+        console.error("Error decoding QR code:", error);
+        return null; // Returning null in case of an error
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     const scanButton = document.getElementById("scan");
 
     if (scanButton) {
         scanButton.addEventListener("click", () => {
-            chrome.runtime.sendMessage({ action: "captureScreen" }, (response) => {
+            chrome.runtime.sendMessage({ action: "captureScreen" }, async (response) => {
                 if (response && response.dataUrl) {
-                    const img = new Image();
-                    img.src = response.dataUrl;
-                    img.onload = () => {
-                        const canvas = document.createElement("canvas");
-                        const ctx = canvas.getContext("2d");
-                        canvas.width = img.width;
-                        canvas.height = img.height;
-                        ctx.drawImage(img, 0, 0, img.width, img.height);
+                    const url = response.dataUrl;
+                    const qrCodeData = await decodeQRCode(url);
 
-                        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                        const code = jsQR(imageData.data, imageData.width, imageData.height);
-
-                        const resultText = code ? `QR Code Data: ${code.data}` : "QR Code not found!";
-                        document.getElementById("result").innerText = resultText;
-
-                        // Переход по ссылке, если QR-код содержит URL
-                        if (code && code.data) {
-                            let url = code.data;
-
-                            // Проверка на наличие протокола и добавление http://, если его нет
-                            if (!/^https?:\/\//i.test(url)) {
-                                url = 'http://' + url;
-                            }
-
-                            const openLinkButton = document.createElement("button");
-                            openLinkButton.innerText = "Open Link";
-                            openLinkButton.addEventListener("click", () => {
-                                chrome.tabs.create({ url: url });
-                            });
-                            document.body.appendChild(openLinkButton);
+                    if (qrCodeData) {
+                        let resultText = `QR Code Data: <b>${qrCodeData}</b>`;
+                        document.getElementById("result").innerHTML = resultText; // Use innerHTML to render HTML tags
+                    
+                        // Checking for protocol and adding http:// if it's missing
+                        let finalUrl = qrCodeData; // Creating a new variable for the final URL
+                        if (!/^https?:\/\//i.test(finalUrl)) {
+                            finalUrl = 'http://' + finalUrl; // Adding http:// if the protocol is absent
                         }
-                    };
+                    
+                        const openLinkButton = document.createElement("button");
+                        openLinkButton.innerText = `Open Link: ${finalUrl}`;
+                        openLinkButton.className = "link-button"; // Assigning the new class for styling
+                        openLinkButton.addEventListener("click", () => {
+                            chrome.tabs.create({ url: finalUrl }); // Using the final URL
+                        });
+                        document.body.appendChild(openLinkButton);
+                    } else {
+                        document.getElementById("result").innerText = "QR Code not found!";
+                    }
                 }
             });
         });
