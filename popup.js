@@ -1,6 +1,5 @@
 async function decodeQRCode(imageDataUrl) {
     try {
-        // Creating FormData to send the image
         const formData = new FormData();
         const response = await fetch(imageDataUrl);
 
@@ -10,6 +9,9 @@ async function decodeQRCode(imageDataUrl) {
 
         const blob = await response.blob();
         formData.append('file', blob);
+
+        // Show loading spinner
+        document.getElementById("loading").style.display = "block"; // Show loading spinner
 
         const apiResponse = await fetch('https://api.qrserver.com/v1/read-qr-code/', {
             method: 'POST',
@@ -29,11 +31,15 @@ async function decodeQRCode(imageDataUrl) {
     } catch (error) {
         console.error("Error decoding QR code:", error);
         return null; // Returning null in case of an error
+    } finally {
+        // Hide loading spinner
+        document.getElementById("loading").style.display = "none"; // Hide loading spinner
     }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
     const scanButton = document.getElementById("scan");
+    const linkList = document.getElementById("linkList"); // Get the ordered list element
 
     if (scanButton) {
         scanButton.addEventListener("click", () => {
@@ -44,21 +50,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     if (qrCodeData) {
                         let resultText = `QR Code Data: <b>${qrCodeData}</b>`;
-                        document.getElementById("result").innerHTML = resultText; // Use innerHTML to render HTML tags
-                    
-                        // Checking for protocol and adding http:// if it's missing
+                        document.getElementById("result").innerHTML = resultText;
+
                         let finalUrl = qrCodeData; // Creating a new variable for the final URL
                         if (!/^https?:\/\//i.test(finalUrl)) {
                             finalUrl = 'http://' + finalUrl; // Adding http:// if the protocol is absent
                         }
-                    
+
+                        // Create a new list item for the link
+                        const listItem = document.createElement("li");
                         const openLinkButton = document.createElement("button");
                         openLinkButton.innerText = `Open Link: ${finalUrl}`;
                         openLinkButton.className = "link-button"; // Assigning the new class for styling
                         openLinkButton.addEventListener("click", () => {
                             chrome.tabs.create({ url: finalUrl }); // Using the final URL
                         });
-                        document.body.appendChild(openLinkButton);
+                        listItem.appendChild(openLinkButton); // Append button to list item
+                        linkList.appendChild(listItem); // Append list item to the ordered list
                     } else {
                         document.getElementById("result").innerText = "QR Code not found!";
                     }
