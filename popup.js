@@ -37,9 +37,51 @@ async function decodeQRCode(imageDataUrl) {
     }
 }
 
+function loadLinks() {
+    chrome.storage.local.get('savedLinks', (data) => {
+        const linkList = document.getElementById("linkList");
+        linkList.innerHTML = ''; // Clear the current list
+        const links = data.savedLinks || [];
+
+        links.forEach((linkData, index) => {
+            // Create the link button
+            const linkButton = document.createElement("button");
+            linkButton.className = "link-button"; // Apply the button styling
+            linkButton.textContent = linkData; // Display the QR code data
+            linkButton.onclick = () => {
+                // Open the link in a new tab when the button is clicked
+                window.open(linkData, '_blank');
+            };
+
+            // Create the delete icon
+            const deleteIcon = document.createElement("button");
+            deleteIcon.className = "delete-icon"; // Apply the delete icon styling
+            deleteIcon.textContent = "❌"; // Unicode character for a cross
+            deleteIcon.onclick = (event) => {
+                event.stopPropagation(); // Prevent the link button click event
+                // Remove the link from storage and reload links
+                links.splice(index, 1); // Remove link from array
+                saveLinks(links); // Save updated links
+                loadLinks(); // Reload the links
+            };
+
+            // Append the delete icon to the link button
+            linkButton.appendChild(deleteIcon);
+            linkList.appendChild(linkButton); // Append the link button to the link list
+        });
+    });
+}
+
+function saveLinks(links) {
+    chrome.storage.local.set({ savedLinks: links }, () => {
+        console.log('Links saved:', links);
+    });
+}
+
+
 document.addEventListener('DOMContentLoaded', () => {
     const scanButton = document.getElementById("scan");
-    const linkList = document.getElementById("linkList"); // Get the ordered list element
+    loadLinks(); // Load links when the popup is opened
 
     if (scanButton) {
         scanButton.addEventListener("click", () => {
@@ -52,28 +94,29 @@ document.addEventListener('DOMContentLoaded', () => {
                         let resultText = `QR Code Data: <b>${qrCodeData}</b>`;
                         document.getElementById("result").innerHTML = resultText;
 
-                        let finalUrl = qrCodeData; // Creating a new variable for the final URL
-                        if (!/^https?:\/\//i.test(finalUrl)) {
-                            finalUrl = 'http://' + finalUrl; // Adding http:// if the protocol is absent
-                        }
-
-                        // Create a new list item for the link
+                        // Create a new list item
                         const listItem = document.createElement("li");
-                        const openLinkButton = document.createElement("button");
-                        openLinkButton.innerText = `Open Link: ${finalUrl}`;
-                        openLinkButton.className = "link-button"; // Assigning the new class for styling
-                        openLinkButton.addEventListener("click", () => {
-                            chrome.tabs.create({ url: finalUrl }); // Using the final URL
+                        
+                        // Create an anchor element
+                        const link = document.createElement("a");
+                        link.href = qrCodeData; // Set the link URL
+                        link.target = "_blank"; // Open in a new tab
+                        link.textContent = qrCodeData; // Display the QR code data
+                        
+                        // Append the anchor to the list item
+                        listItem.appendChild(link);
+                        // Append the list item to the ordered list
+                        document.getElementById("linkList").appendChild(listItem);
+
+                        // Save the new link to storage
+                        chrome.storage.local.get('savedLinks', (data) => {
+                            const links = data.savedLinks || [];
+                            links.push(qrCodeData);
+                            saveLinks(links); // Save updated links
                         });
-                        listItem.appendChild(openLinkButton); // Append button to list item
-                        linkList.appendChild(listItem); // Append list item to the ordered list
-                    } else {
-                        document.getElementById("result").innerText = "QR Code not found!";
                     }
                 }
             });
         });
-    } else {
-        console.error("Element with id 'scan' not found");
     }
 });

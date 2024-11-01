@@ -26,6 +26,9 @@
             border-radius: 5px;
             font-size: 16px;
             transition: background-color 0.3s;
+            display: flex; /* Use flexbox for layout */
+            justify-content: space-between; /* Space between link and delete */
+            align-items: center; /* Center vertically */
         }
         #scan {
             background-color: #007BFF;
@@ -37,11 +40,20 @@
         .link-button {
             background-color: #28a745;
             color: white;
-            margin-top: 15px;
-            width: auto; /* Ensure button does not take full width */
+            margin-top: 10px; /* Space between buttons */
+            width: auto; /* Allow width to fit content */
+            text-align: left; /* Align text to the left */
         }
         .link-button:hover {
             background-color: #218838;
+        }
+        .delete-icon {
+            background-color: transparent;
+            color: white;
+            border: none; /* No border */
+            font-size: 14px; /* Smaller font size for delete */
+            cursor: pointer; /* Pointer cursor */
+            margin-left: 10px; /* Space between text and icon */
         }
         #result {
             margin-top: 15px;
@@ -71,9 +83,8 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-        ol {
-            padding-left: 20px; /* Indent ordered list */
-            margin-top: 15px; /* Add some space above the list */
+        #linkList {
+            margin-top: 15px; /* Add some space above the button list */
         }
     </style>
 </head>
@@ -81,8 +92,8 @@
     <h1>QR Code Scanner</h1>
     <button id="scan">Scan QR Code</button>
     <p id="result">Result will appear here</p>
+    <div id="linkList"></div> <!-- Changed from ol to div -->
     <div id="loading" class="spinner" style="display: none;"></div>
-    <ol id="linkList"></ol> <!-- Ordered list for links -->
     <script src="popup.js"></script>
 </body>
 </html>
